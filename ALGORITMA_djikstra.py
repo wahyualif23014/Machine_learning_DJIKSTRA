@@ -3,6 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from collections import defaultdict
 import numpy as np
 
 # Dijkstra
@@ -11,15 +12,12 @@ def dijkstra(graph, start, goal):
     jarak = {node: float('inf') for node in graph}
     jarak[start] = 0
     came_from = {}
+    
     while pq:
         current_distance, current_node = heapq.heappop(pq)
+        
         if current_node == goal:
-            path = []
-            while current_node in came_from:
-                path.append(current_node)
-                current_node = came_from[current_node]
-            path.append(start)
-            return path[::-1]
+            return reconstruct_path(came_from, start, goal)
 
         for neighbor, weight in graph[current_node].items():
             distance = current_distance + weight
@@ -28,24 +26,32 @@ def dijkstra(graph, start, goal):
                 heapq.heappush(pq, (distance, neighbor))
                 came_from[neighbor] = current_node
     return None
+
+def reconstruct_path(came_from, start, goal):
+    path = []
+    current_node = goal
+    while current_node in came_from:
+        path.append(current_node)
+        current_node = came_from[current_node]
+    path.append(start)
+    return path[::-1]
+
 # Fungsi heuristik untuk A*
 def heuristic(node, goal):
+    # Implementasikan heuristik yang lebih baik di sini
     return 1  
+
 def a_star(graph, start, goal):
     pq = [(0, start)]
     g_costs = {node: float('inf') for node in graph}
     g_costs[start] = 0
     came_from = {}
+    
     while pq:
         current_cost, current_node = heapq.heappop(pq)
 
         if current_node == goal:
-            path = []
-            while current_node in came_from:
-                path.append(current_node)
-                current_node = came_from[current_node]
-            path.append(start)
-            return path[::-1]
+            return reconstruct_path(came_from, start, goal)
 
         for neighbor, weight in graph[current_node].items():
             new_cost = g_costs[current_node] + weight
@@ -55,6 +61,7 @@ def a_star(graph, start, goal):
                 heapq.heappush(pq, (priority, neighbor))
                 came_from[neighbor] = current_node
     return None
+
 # Untuk graf
 def draw_graph(graph, path):
     G = nx.DiGraph()
@@ -97,10 +104,10 @@ def save_to_pdf(filename, algorithm, start, goal, path, path_type):
 # **PROGRAM UTAMA**
 if __name__ == "__main__":
     while True:
-        graph = {}
+        graph = defaultdict(dict)
         safety = {}
 
-        # Input jumlah simpul
+        # masukan jumlah simpul
         n = int(input("Masukkan jumlah simpul: "))
         
         # Input node dan bobotnya
@@ -119,6 +126,11 @@ if __name__ == "__main__":
         # Input titik awal dan tujuan
         start = input("Masukkan titik awal: ")
         goal = input("Masukkan titik tujuan: ")
+
+        # Validasi input
+        if start not in graph or goal not in graph:
+            print("Titik awal atau tujuan tidak valid!")
+            continue
 
         # Pilih jenis jalur
         print("\nPilih Jenis Jalur:")
@@ -147,7 +159,7 @@ if __name__ == "__main__":
             selected_path = dijkstra(safe_graph, start, goal)
             path_type = "Jalur Jauh Tapi Aman 🛡️"
         
-        # Tampilkan hasil & simpan ke PDF
+        # simpan ke PDF
         if selected_path:
             print(f"Hasil Jalur ({path_type}): {' -> '.join(selected_path)}")
             save_to_pdf("hasil_rute.pdf", "Dijkstra", start, goal, selected_path, path_type)
@@ -155,7 +167,6 @@ if __name__ == "__main__":
         else:
             print("Tidak ditemukan jalur yang sesuai!")
 
-        # Tanya pengguna apakah ingin melakukan pencarian lagi
         repeat = input("Apakah Anda ingin melakukan pencarian lagi? (ya/tidak): ").lower()
         if repeat != 'ya':
             break
