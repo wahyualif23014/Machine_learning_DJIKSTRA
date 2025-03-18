@@ -6,7 +6,7 @@ from reportlab.pdfgen import canvas
 from collections import defaultdict
 import numpy as np
 
-# Dijkstra
+# Djikstra
 def dijkstra(graph, start, goal):
     pq = [(0, start)]  
     jarak = {node: float('inf') for node in graph}
@@ -38,7 +38,6 @@ def reconstruct_path(came_from, start, goal):
 
 # Fungsi heuristik untuk A*
 def heuristic(node, goal):
-    # Implementasikan heuristik yang lebih baik di sini
     return 1  
 
 def a_star(graph, start, goal):
@@ -133,11 +132,12 @@ if __name__ == "__main__":
             continue
 
         # Pilih jenis jalur
-        print("\nPilih Jenis Jalur:")
+        print("\n==========Pilih Jenis Jalur:========")
         print("1. Tercepat & Aman ✅")
         print("2. Tercepat Tidak Aman ⚠️")
         print("3. Jalur Jauh Tapi Aman 🛡️")
         choice = int(input("Masukkan pilihan (1/2/3): "))
+        print("=======================================")
 
         selected_path = None
         path_type = ""
