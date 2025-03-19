@@ -127,14 +127,12 @@ class LinearAlgebraTools:
             gradient = -2 * A.T @ error / len(b)
             x_new = x - lr * gradient
             
-            # Cek konvergensi
             if np.linalg.norm(x_new - x) < tolerance:
                 print(f"Konvergen setelah {i+1} iterasi")
                 break
                 
             x = x_new
             
-            # Tampilkan progress setiap 200 iterasi
             if (i + 1) % 200 == 0:
                 print(f"Iterasi {i+1}: Loss = {loss:.6f}")
         
@@ -267,7 +265,6 @@ class LinearAlgebraTools:
                       angles='xy', scale_units='xy', scale=1, 
                       color=colors[i], label=labels[i])
         
-        # Tampilkan grid dengan unit circle
         theta = np.linspace(0, 2*np.pi, 100)
         plt.plot(np.cos(theta), np.sin(theta), 'gray', alpha=0.3)
         
