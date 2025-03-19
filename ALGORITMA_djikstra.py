@@ -142,13 +142,11 @@ if __name__ == "__main__":
         selected_path = None
         path_type = ""
 
-        # Tercepat & Aman (menggunakan Dijkstra hanya untuk node aman)
         if choice == 1:
             safe_graph = {node: {n: w for n, w in neighbors.items() if safety[n]} for node, neighbors in graph.items()}
             selected_path = dijkstra(safe_graph, start, goal)
             path_type = "Tercepat & Aman ✅"
 
-        # Tercepat Tidak Aman (menggunakan Dijkstra biasa)
         elif choice == 2:
             selected_path = dijkstra(graph, start, goal)
             path_type = "Tercepat Tidak Aman ⚠️"
