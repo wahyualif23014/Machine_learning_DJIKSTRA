@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from collections import defaultdict
+# pdf format
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+
 
 # Djikstra Algorithm
 def dijkstra(graph, start, goal):
@@ -13,13 +18,13 @@ def dijkstra(graph, start, goal):
     came_from = {}
 
     while pq:
-        current_distance, current_node = heapq.heappop(pq)
+        jarakSaatIni, current_node = heapq.heappop(pq)
 
         if current_node == goal:
             return reconstruct_path(came_from, start, goal)
 
         for neighbor, weight in graph[current_node].items():
-            distance = current_distance + weight
+            distance = jarakSaatIni + weight
             if distance < jarak[neighbor]:
                 jarak[neighbor] = distance
                 heapq.heappush(pq, (distance, neighbor))
@@ -57,26 +62,52 @@ def draw_graph(graph, path):
 
 # Fungsi untuk menyimpan hasil ke PDF
 def save_to_pdf(filename, algorithm, start, goal, path, path_type):
-    c = canvas.Canvas(filename, pagesize=letter)
-    c.drawString(100, 750, f"Algoritma: {algorithm}")
-    c.drawString(100, 730, f"Titik Awal: {start}")
-    c.drawString(100, 710, f"Titik Tujuan: {goal}")
-    c.drawString(100, 690, f"Jenis Jalur: {path_type}")
+    doc = SimpleDocTemplate(filename, pagesize=letter)
+    elements = []
 
-    c.drawString(100, 670, "Jalur yang Dipilih:")
-    c.drawString(120, 650, " -> ".join(path) if path else "Tidak ditemukan jalur.")
+    styles = getSampleStyleSheet()
+    title_style = styles["Title"]
+    normal_style = styles["Normal"]
 
-    c.save()
+    # Judul
+    title = Paragraph(f"<b>Hasil Analisis Jalur Terbaik</b>", title_style)
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    # Informasi Dasar
+    info_text = f"""
+    <b>Algoritma:</b> {algorithm} <br/>
+    <b>Titik Awal:</b> {start} <br/>
+    <b>Titik Tujuan:</b> {goal} <br/>
+    <b>Jenis Jalur:</b> {path_type} <br/>
+    """
+    elements.append(Paragraph(info_text, normal_style))
+    elements.append(Spacer(1, 12))
+
+    # Garis pemisah
+    elements.append(Paragraph("<hr/>", normal_style))
+    elements.append(Spacer(1, 12))
+
+    # Jalur yang Dipilih
+    if path:
+        path_text = "<b>Jalur yang Dipilih:</b><br/>"
+        path_text += " → ".join([f"<b>{i+1}.</b> {node}" for i, node in enumerate(path)])
+    else:
+        path_text = "<b>Jalur yang Dipilih:</b> Tidak ditemukan jalur yang sesuai."
+    
+    elements.append(Paragraph(path_text, normal_style))
+    elements.append(Spacer(1, 12))
+
+    # Simpan ke PDF
+    doc.build(elements)
     print(f"Hasil telah disimpan ke {filename}")
 
-# Main Program
 while True:
     graph = defaultdict(dict)
     safety = {}
-
-    # Memastikan jumlah simpul valid
     while True:
         try:
+            print("============= Masukkan Data Simpul ==============")
             n = int(input("Masukkan jumlah simpul: "))
             if n <= 0:
                 print("Jumlah simpul harus lebih dari 0! Silakan coba lagi.")
@@ -85,7 +116,6 @@ while True:
         except ValueError:
             print("Input tidak valid! Harap masukkan angka.")
 
-    # Input node dan status keamanan
     for _ in range(n):
         while True:
             node = input("Masukkan nama simpul: ").strip().upper()
@@ -110,6 +140,7 @@ while True:
     for node in graph:
         while True:
             try:
+                print("============= Masukkan Data Tetangga ==============")
                 edges = int(input(f"Masukkan jumlah tetangga untuk simpul {node}: "))
                 if edges < 0:
                     print("Jumlah tetangga tidak boleh negatif! Coba lagi.")
@@ -145,8 +176,10 @@ while True:
 
     # Input titik awal dan tujuan
     while True:
+        print("\n============= Masukkan Titik Awal & Tujuan ==============")
         start = input("Masukkan titik awal: ").strip().upper()
         goal = input("Masukkan titik tujuan: ").strip().upper()
+        print("============================================================")
         if start in graph and goal in graph:
             break
         else:
@@ -194,9 +227,9 @@ while True:
     while True:
         lanjutkan = input("\nTekan ENTER untuk lanjut atau ketik 'tidak' untuk keluar: ").strip().lower()
         if lanjutkan == "tidak":
-            print("Terima kasih telah menggunakan program ini! 🚀")
             exit()  
         elif lanjutkan == "":
+            print("Terima kasih telah menggunakan program ini! 🚀")
             break  
         else:
-            print("Input tidak valid! Silakan tekan ENTER untuk keluar atau ketik 'tidak' untuk lanjut.")
+            print("Input tidak valid! Silakan tekan ENTER untuk lanjut atau ketik 'tidak' untuk keluar.")
