@@ -10,13 +10,10 @@ from transformers import pipeline
 import joblib
 import re
 
-# Load model AI untuk merangkum teks
 summarizer = pipeline("summarization")
 
-# Load model NLP untuk klasifikasi dokumen
-model = joblib.load("document_classifier.pkl")  # Model pretrained TF-IDF + SVM
+model = joblib.load("document_classifier.pkl")  
 
-# Fungsi untuk membaca berbagai file
 def read_text(file):
     return file.read().decode("utf-8")
 
@@ -50,16 +47,13 @@ def read_image(file):
 
 
 
-# Fungsi untuk merangkum teks
 def summarize_text(text):
     return summarizer(text, max_length=100, min_length=30, do_sample=False)[0]["summary_text"]
 
-# Fungsi untuk menyeleksi jenis dokumen
 def classify_document(text):
     predicted_category = model.predict([text])[0]
     return predicted_category
 
-# UI Streamlit
 st.title("📂 AI File Analyzer & Summarizer")
 st.write("Upload file dan AI akan menentukan jenisnya serta merangkum isinya!")
 
@@ -87,13 +81,10 @@ if uploaded_file is not None:
 
     if text:
         st.subheader("📜 Isi File:")
-        st.write(text[:1000])  # Menampilkan sebagian isi file
-
-        # Klasifikasi dokumen
+        st.write(text[:1000])  
         document_type = classify_document(text)
         st.subheader(f"📌 Jenis Dokumen: {document_type}")
 
-        # Ringkasan AI
         st.subheader("📌 Ringkasan AI:")
-        st.write(summarize_text(text))  # Merangkum isi file dengan AI
-# streamlit run analisispasar.py
+        st.write(summarize_text(text)) 
+# streamlit run resume.py
