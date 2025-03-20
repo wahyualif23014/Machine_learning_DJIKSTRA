@@ -11,8 +11,11 @@ import joblib
 import re
 
 summarizer = pipeline("summarization")
-
-model = joblib.load("document_classifier.pkl")  
+try:
+    model = joblib.load("document_classifier.pkl")
+except FileNotFoundError:
+    st.error("Klasifikasi model dokumen tidak di temukan! Silakan latih kembali model Anda.")
+    st.stop() 
 
 def read_text(file):
     return file.read().decode("utf-8")
@@ -47,13 +50,18 @@ def read_image(file):
 
 
 
-def summarize_text(text):
-    return summarizer(text, max_length=100, min_length=30, do_sample=False)[0]["summary_text"]
+def summarize_text(text): 
+    max_input_length = 1024  
+    truncated_text = text[:max_input_length]
+    return summarizer(truncated_text, max_length=100, min_length=30, do_sample=False)[0]["summary_text"]
 
 def classify_document(text):
-    predicted_category = model.predict([text])[0]
-    return predicted_category
-
+    try:
+        predicted_category = model.predict([text])[0]
+        return predicted_category
+    except Exception as e:
+        return "Klasifikasi gagal: " + str(e)
+    
 st.title("📂 AI File Analyzer & Summarizer")
 st.write("Upload file dan AI akan menentukan jenisnya serta merangkum isinya!")
 
@@ -87,4 +95,4 @@ if uploaded_file is not None:
 
         st.subheader("📌 Ringkasan AI:")
         st.write(summarize_text(text)) 
-# streamlit run resume.py
+# python -m streamlit run resume_file.py

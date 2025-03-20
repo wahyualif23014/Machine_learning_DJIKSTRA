@@ -8,7 +8,6 @@ class LinearAlgebraTools:
     """Kelas untuk operasi aljabar linear dengan fungsi yang lebih terstruktur."""
     
     def __init__(self):
-        # Matriks default yang akan digunakan di beberapa fungsi
         self.default_matrix_a = np.array([[2, 3], [1, 4]])
         self.default_matrix_b = np.array([[5, 1], [2, 3]])
     

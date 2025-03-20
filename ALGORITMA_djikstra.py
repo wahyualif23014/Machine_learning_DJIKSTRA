@@ -4,18 +4,17 @@ import matplotlib.pyplot as plt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from collections import defaultdict
-import numpy as np
 
-# Djikstra
+# Djikstra Algorithm
 def dijkstra(graph, start, goal):
-    pq = [(0, start)]  
+    pq = [(0, start)]
     jarak = {node: float('inf') for node in graph}
     jarak[start] = 0
     came_from = {}
-    
+
     while pq:
         current_distance, current_node = heapq.heappop(pq)
-        
+
         if current_node == goal:
             return reconstruct_path(came_from, start, goal)
 
@@ -36,32 +35,7 @@ def reconstruct_path(came_from, start, goal):
     path.append(start)
     return path[::-1]
 
-# Fungsi heuristik untuk A*
-def heuristic(node, goal):
-    return 1  
-
-def a_star(graph, start, goal):
-    pq = [(0, start)]
-    g_costs = {node: float('inf') for node in graph}
-    g_costs[start] = 0
-    came_from = {}
-    
-    while pq:
-        current_cost, current_node = heapq.heappop(pq)
-
-        if current_node == goal:
-            return reconstruct_path(came_from, start, goal)
-
-        for neighbor, weight in graph[current_node].items():
-            new_cost = g_costs[current_node] + weight
-            if new_cost < g_costs[neighbor]:
-                g_costs[neighbor] = new_cost
-                priority = new_cost + heuristic(neighbor, goal)
-                heapq.heappush(pq, (priority, neighbor))
-                came_from[neighbor] = current_node
-    return None
-
-# Untuk graf
+# Fungsi untuk menggambar graf
 def draw_graph(graph, path):
     G = nx.DiGraph()
     for node in graph:
@@ -81,7 +55,7 @@ def draw_graph(graph, path):
     plt.title("Graph Visualization")
     plt.show()
 
-# Fungsi menyimpan hasil ke PDF
+# Fungsi untuk menyimpan hasil ke PDF
 def save_to_pdf(filename, algorithm, start, goal, path, path_type):
     c = canvas.Canvas(filename, pagesize=letter)
     c.drawString(100, 750, f"Algoritma: {algorithm}")
@@ -92,79 +66,137 @@ def save_to_pdf(filename, algorithm, start, goal, path, path_type):
     c.drawString(100, 670, "Jalur yang Dipilih:")
     c.drawString(120, 650, " -> ".join(path) if path else "Tidak ditemukan jalur.")
 
-    c.drawString(100, 620, "Deskripsi:")
-    c.drawString(120, 600, "Jalur tercepat = waktu tempuh minim")
-    c.drawString(120, 580, "Jalur aman = tidak melewati area berbahaya")
-    c.drawString(120, 560, "Jalur jauh & aman = menghindari semua ancaman")
-
     c.save()
     print(f"Hasil telah disimpan ke {filename}")
 
-# **PROGRAM UTAMA**
-if __name__ == "__main__":
+# Main Program
+while True:
+    graph = defaultdict(dict)
+    safety = {}
+
+    # Memastikan jumlah simpul valid
     while True:
-        graph = defaultdict(dict)
-        safety = {}
+        try:
+            n = int(input("Masukkan jumlah simpul: "))
+            if n <= 0:
+                print("Jumlah simpul harus lebih dari 0! Silakan coba lagi.")
+            else:
+                break
+        except ValueError:
+            print("Input tidak valid! Harap masukkan angka.")
 
-        # masukan jumlah simpul
-        n = int(input("Masukkan jumlah simpul: "))
-        
-        # Input node dan bobotnya
-        for _ in range(n):
-            node = input("Masukkan nama simpul: ")
-            graph[node] = {}
-            safe = input(f"Apakah simpul {node} aman? (ya/tidak): ").lower()
-            safety[node] = safe == "ya"
+    # Input node dan status keamanan
+    for _ in range(n):
+        while True:
+            node = input("Masukkan nama simpul: ").strip().upper()
+            if not node:
+                print("Nama simpul tidak boleh kosong! Silakan coba lagi.")
+            elif node in graph:
+                print(f"Simpul {node} sudah ada! Gunakan nama lain.")
+            else:
+                break
 
-        for node in graph:
-            edges = int(input(f"Masukkan jumlah tetangga untuk simpul {node}: "))
-            for _ in range(edges):
-                neighbor, weight = input(f"  Tetangga dan bobot (cth: B 4): ").split()
-                graph[node][neighbor] = int(weight)
+        graph[node] = {}
 
-        # Input titik awal dan tujuan
-        start = input("Masukkan titik awal: ")
-        goal = input("Masukkan titik tujuan: ")
+        while True:
+            safe_input = input(f"Apakah simpul {node} aman? (ya/tidak): ").strip().lower()
+            if safe_input in ["ya", "tidak"]:
+                safety[node] = safe_input == "ya"
+                break
+            else:
+                print("Input tidak valid! Harap masukkan 'ya' atau 'tidak'.")
 
-        # Validasi input
-        if start not in graph or goal not in graph:
-            print("Titik awal atau tujuan tidak valid!")
-            continue
+    # Input tetangga dan bobotnya
+    for node in graph:
+        while True:
+            try:
+                edges = int(input(f"Masukkan jumlah tetangga untuk simpul {node}: "))
+                if edges < 0:
+                    print("Jumlah tetangga tidak boleh negatif! Coba lagi.")
+                else:
+                    break
+            except ValueError:
+                print("Input tidak valid! Harap masukkan angka.")
 
-        # Pilih jenis jalur
+        for _ in range(edges):
+            while True:
+                try:
+                    neighbor, weight = input(f"  Tetangga dan bobot (cth: B 4): ").split()
+                    neighbor = neighbor.upper()
+
+                    if neighbor not in graph:
+                        print(f"Simpul {neighbor} belum terdaftar! Pastikan Anda memasukkan simpul yang sudah dibuat.")
+                        continue
+                    
+                    weight = int(weight)
+                    if weight <= 0:
+                        print("Bobot harus lebih dari 0! Silakan coba lagi.")
+                        continue
+                    
+                    if neighbor in graph[node]:
+                        print(f"Simpul {neighbor} sudah menjadi tetangga dari {node}! Coba lagi.")
+                        continue
+
+                    graph[node][neighbor] = weight
+                    break
+
+                except ValueError:
+                    print("Format salah! Gunakan format yang benar (contoh: B 4).")
+
+    # Input titik awal dan tujuan
+    while True:
+        start = input("Masukkan titik awal: ").strip().upper()
+        goal = input("Masukkan titik tujuan: ").strip().upper()
+        if start in graph and goal in graph:
+            break
+        else:
+            print("Titik awal atau tujuan tidak valid! Pastikan Anda memasukkan simpul yang benar.")
+
+    # Memilih jenis jalur
+    while True:
         print("\n==========Pilih Jenis Jalur:========")
         print("1. Tercepat & Aman ✅")
         print("2. Tercepat Tidak Aman ⚠️")
         print("3. Jalur Jauh Tapi Aman 🛡️")
-        choice = int(input("Masukkan pilihan (1/2/3): "))
-        print("=======================================")
+        try:
+            choice = int(input("Masukkan pilihan (1/2/3): "))
+            if choice in [1, 2, 3]:
+                break
+            else:
+                print("Pilihan tidak valid! Masukkan angka 1, 2, atau 3.")
+        except ValueError:
+            print("Input harus berupa angka!")
 
-        selected_path = None
-        path_type = ""
+    selected_path = None
+    path_type = ""
 
-        if choice == 1:
-            safe_graph = {node: {n: w for n, w in neighbors.items() if safety[n]} for node, neighbors in graph.items()}
-            selected_path = dijkstra(safe_graph, start, goal)
-            path_type = "Tercepat & Aman ✅"
+    if choice == 1:
+        safe_graph = {node: {n: w for n, w in neighbors.items() if safety[n]} for node, neighbors in graph.items()}
+        selected_path = dijkstra(safe_graph, start, goal)
+        path_type = "Tercepat & Aman ✅"
 
-        elif choice == 2:
-            selected_path = dijkstra(graph, start, goal)
-            path_type = "Tercepat Tidak Aman ⚠️"
+    elif choice == 2:
+        selected_path = dijkstra(graph, start, goal)
+        path_type = "Tercepat Tidak Aman ⚠️"
 
-        # Jalur Jauh Tapi Aman (menggunakan jalur terjauh dengan hanya node aman)
-        elif choice == 3:
-            safe_graph = {node: {n: w for n, w in neighbors.items() if safety[n]} for node, neighbors in graph.items()}
-            selected_path = dijkstra(safe_graph, start, goal)
-            path_type = "Jalur Jauh Tapi Aman 🛡️"
+    elif choice == 3:
+        safe_graph = {node: {n: w for n, w in neighbors.items() if safety[n]} for node, neighbors in graph.items()}
+        selected_path = dijkstra(safe_graph, start, goal)
+        path_type = "Jalur Jauh Tapi Aman 🛡️"
+
+    if selected_path:
+        print(f"Hasil Jalur ({path_type}): {' -> '.join(selected_path)}")
+        save_to_pdf("hasil_rute.pdf", "Dijkstra", start, goal, selected_path, path_type)
+        draw_graph(graph, selected_path)
+    else:
+        print("Tidak ditemukan jalur yang sesuai!")
         
-        # simpan ke PDF
-        if selected_path:
-            print(f"Hasil Jalur ({path_type}): {' -> '.join(selected_path)}")
-            save_to_pdf("hasil_rute.pdf", "Dijkstra", start, goal, selected_path, path_type)
-            draw_graph(graph, selected_path)
+    while True:
+        lanjutkan = input("\nTekan ENTER untuk lanjut atau ketik 'tidak' untuk keluar: ").strip().lower()
+        if lanjutkan == "tidak":
+            print("Terima kasih telah menggunakan program ini! 🚀")
+            exit()  
+        elif lanjutkan == "":
+            break  
         else:
-            print("Tidak ditemukan jalur yang sesuai!")
-
-        repeat = input("Apakah Anda ingin melakukan pencarian lagi? (ya/tidak): ").lower()
-        if repeat != 'ya':
-            break
+            print("Input tidak valid! Silakan tekan ENTER untuk keluar atau ketik 'tidak' untuk lanjut.")
