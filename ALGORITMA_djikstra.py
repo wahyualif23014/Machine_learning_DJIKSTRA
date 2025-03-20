@@ -9,7 +9,6 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
-
 # Djikstra Algorithm
 def dijkstra(graph, start, goal):
     pq = [(0, start)]
@@ -61,7 +60,7 @@ def draw_graph(graph, path):
     plt.show()
 
 # Fungsi untuk menyimpan hasil ke PDF
-def save_to_pdf(filename, algorithm, start, goal, path, path_type):
+def savePdf(filename, algorithm, start, goal, path, path_type):
     doc = SimpleDocTemplate(filename, pagesize=letter)
     elements = []
 
@@ -73,8 +72,6 @@ def save_to_pdf(filename, algorithm, start, goal, path, path_type):
     title = Paragraph(f"<b>Hasil Analisis Jalur Terbaik</b>", title_style)
     elements.append(title)
     elements.append(Spacer(1, 12))
-
-    # Informasi Dasar
     info_text = f"""
     <b>Algoritma:</b> {algorithm} <br/>
     <b>Titik Awal:</b> {start} <br/>
@@ -97,7 +94,6 @@ def save_to_pdf(filename, algorithm, start, goal, path, path_type):
     
     elements.append(Paragraph(path_text, normal_style))
     elements.append(Spacer(1, 12))
-
     # Simpan ke PDF
     doc.build(elements)
     print(f"Hasil telah disimpan ke {filename}")
@@ -219,7 +215,7 @@ while True:
 
     if selected_path:
         print(f"Hasil Jalur ({path_type}): {' -> '.join(selected_path)}")
-        save_to_pdf("hasil_rute.pdf", "Dijkstra", start, goal, selected_path, path_type)
+        savePdf("hasil_rute.pdf", "Dijkstra", start, goal, selected_path, path_type)
         draw_graph(graph, selected_path)
     else:
         print("Tidak ditemukan jalur yang sesuai!")
@@ -233,3 +229,5 @@ while True:
             break  
         else:
             print("Input tidak valid! Silakan tekan ENTER untuk lanjut atau ketik 'tidak' untuk keluar.")
+
+            # memberikan point jumlah di program pdf yang dibuat
